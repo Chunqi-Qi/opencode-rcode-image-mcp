@@ -11,6 +11,8 @@
 [![MCP](https://img.shields.io/badge/MCP-compatible-orange.svg)](https://modelcontextprotocol.io)
 [![Models](https://img.shields.io/badge/models-gpt--image--2%20%7C%20nano--banana-purple.svg)](#支持模型)
 
+<img src="assets/opencode-rcode-image-mcp-hero.png" alt="opencode-rcode-image-mcp project introduction" width="100%" />
+
 </div>
 
 ---
