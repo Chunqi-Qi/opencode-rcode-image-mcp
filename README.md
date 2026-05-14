@@ -1,5 +1,7 @@
 # opencode-rcode-image-mcp
 
+[中文](README.md) | [English](README.en.md)
+
 通过 Right Code 的 OpenAI 兼容 API 调用 gpt-image-2 / nano-banana 等模型生成图片的 MCP Server。支持 chat 流式和 images 同步双通道，自动回退，生成后自动下载到本地。
 
 ## 安装
