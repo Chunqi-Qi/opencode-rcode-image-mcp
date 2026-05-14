@@ -1,149 +1,101 @@
+<div align="center">
+
 # opencode-rcode-image-mcp
 
-[中文](README.md) | [English](README.en.md)
+**One-line image generation right inside your OpenCode terminal**
 
-An MCP server that generates images with models such as gpt-image-2 and nano-banana through Right Code's OpenAI-compatible API. It supports both chat streaming and synchronous images transports, automatically falls back when needed, and downloads generated images locally.
+[中文](README.md) · [English](README.en.md) · [Full Usage Guide](docs/USAGE.en.md)
 
-## Installation
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+[![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](https://nodejs.org)
+[![MCP](https://img.shields.io/badge/MCP-compatible-orange.svg)](https://modelcontextprotocol.io)
+[![Models](https://img.shields.io/badge/models-gpt--image--2%20%7C%20nano--banana-purple.svg)](#supported-models)
 
-```bash
-git clone <repo-url> ~/code/MCP/opencode-rcode-image-mcp
-cd ~/code/MCP/opencode-rcode-image-mcp
-npm install
-npm run build
+</div>
+
+---
+
+An MCP server that brings top-tier image models — `gpt-image-2` and the `nano-banana` family — into [OpenCode](https://opencode.ai) and other MCP clients via [Right Code](https://www.right.codes)'s OpenAI-compatible API. Type `/draw a shiba in a spacesuit` in your terminal, and the image lands in `~/Pictures/` seconds later.
+
+## Highlights
+
+- **Multi-model in one place** — switch between five image models with a single config, from fast previews to 4K renders
+- **Multi-resolution** — 1K / 2K / 4K with preset 1:1, 16:9, 9:16, 4:3, 3:4 aspect ratios
+- **Dual transport, timeout-proof** — chat streaming by default to dodge Cloudflare's 100s limit, with automatic fallback to the synchronous images API
+- **Auto-saved locally** — every result lands in `~/Pictures/right-code/yyyy-mm-dd/`, organized by date
+- **Vision built-in** — `describe_image` taps Gemini 3 Pro and friends to read images back
+- **Drop-in setup** — `npm install` plus a JSON snippet. Works with OpenCode and Claude Desktop out of the box
+
+## Demo
+
+```
+/draw A shiba inu in a spacesuit on the moon, photorealistic
+/draw Cyberpunk skyline at night model=nano-banana-2 resolution=2K aspect_ratio=16:9
+/draw-hd Neon street in the rain
 ```
 
-## Configuration
+Example response:
 
-### Environment Variables
+```
+Saved: ~/Pictures/right-code/2026-05-14/shiba-astronaut.png
+URL:   https://cdn.right.codes/...
+```
 
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `RIGHT_CODES_API_KEY` | Yes | - | Right Code API key (`sk-xxx`) |
-| `RIGHT_CODES_BASE_URL` | No | `https://www.right.codes/draw` | API base URL |
-| `RIGHT_CODES_DOWNLOAD_DIR` | No | `~/Pictures/right-code` | Root directory for downloaded images |
+## Supported Models
 
-### Register With OpenCode
+| Model | Resolutions | Best for |
+|---|---|---|
+| `gpt-image-2-vip` | 1K · 2K · 4K | High-res output, posters, detail-heavy work |
+| `gpt-image-2` (default) | 1K | Fast iteration, everyday creation |
+| `nano-banana` | 1K | Lightning-fast previews |
+| `nano-banana-2` | 1K · 2K · 4K | Speed-quality balance |
+| `nano-banana-pro` | 1K · 2K · 4K | Advanced quality, strong prompt understanding |
 
-Add the following to `~/.config/opencode/opencode.json`:
+Vision: `describe_image` defaults to `gemini-3.1-pro`, switchable to `gemini-3-pro-preview` and `gemini-3.1-pro-preview`.
+
+## Quick Start
+
+```bash
+git clone https://github.com/Chunqi-Qi/opencode-rcode-image-mcp.git
+cd opencode-rcode-image-mcp
+npm install && npm run build
+```
+
+Add to `~/.config/opencode/opencode.json`:
 
 ```jsonc
 {
   "mcp": {
     "opencode-rcode-image": {
       "type": "local",
-      "command": ["node", "/Users/xxx/code/MCP/opencode-rcode-image-mcp/dist/index.js"],
+      "command": ["node", "/absolute/path/opencode-rcode-image-mcp/dist/index.js"],
       "enabled": true,
       "environment": {
-        "RIGHT_CODES_API_KEY": "sk-xxx",
-        "RIGHT_CODES_BASE_URL": "https://www.right.codes/draw",
-        "RIGHT_CODES_DOWNLOAD_DIR": "~/Pictures/right-code"
+        "RIGHT_CODES_API_KEY": "sk-xxx"
       }
     }
   }
 }
 ```
 
-### Slash Commands (Optional)
-
-```jsonc
-{
-  "command": {
-    "draw": {
-      "description": "Generate an image",
-      "template": "Please use the generate_image tool from the opencode-rcode-image MCP server to generate an image. Parse parameters from the user's input: the first line is the prompt, and optional key=value pairs can override model/resolution/aspect_ratio and other parameters. Defaults: model=gpt-image-2, resolution=1K, aspect_ratio=1:1. After generation, reply with the local image path and online URL only, without extra explanation.\n\nUser input:\n$ARGUMENTS"
-    },
-    "draw-hd": {
-      "description": "High-resolution image generation with 2K + gpt-image-2-vip",
-      "template": "Call the generate_image tool to generate an image, forcing model=gpt-image-2-vip and resolution=2K. Prompt: $ARGUMENTS"
-    }
-  }
-}
-```
-
-Restart OpenCode after updating the configuration.
-
-## Usage
-
-```
-/draw A Shiba Inu wearing a spacesuit standing on the moon, realistic style
-/draw Cyberpunk city at night model=nano-banana-2 resolution=2K aspect_ratio=16:9
-/draw-hd Neon street in the rain
-```
-
-Generated images are automatically saved to `~/Pictures/right-code/yyyy-mm-dd/`.
+Restart OpenCode and you're set. Full install, slash commands, parameters and troubleshooting are in the **[Usage Guide](docs/USAGE.en.md)**.
 
 ## Tools
 
-### generate_image
-
-Calls Right Code to generate images. By default, it uses the chat streaming transport to avoid Cloudflare timeouts and automatically falls back to the synchronous images API if needed.
-
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| prompt | string | Yes | - | Image prompt |
-| model | enum | No | gpt-image-2 | Image generation model |
-| resolution | 1K/2K/4K | No | 1K | Resolution tier |
-| size | string | No | - | Pixel size such as 1024x1024; overrides resolution+aspect_ratio |
-| aspect_ratio | 1:1/16:9/... | No | 1:1 | Aspect ratio |
-| n | int (1-4) | No | 1 | Number of images to generate |
-| image | string/string[] | No | - | Reference image URL or base64 data |
-| transport | chat/images/auto | No | auto | Transport channel |
-| save_to | string | No | - | Custom save directory |
-| seed | int | No | - | Random seed |
-
-### list_image_models
-
-Lists all available models and their supported resolutions.
-
-### describe_image
-
-Describes image content with a vision model.
-
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| image_url | string | Yes | - | Image URL |
-| question | string | No | Describe the content of this image | Question to ask about the image |
-| model | enum | No | gemini-3.1-pro | Vision model |
-
-## Model Support
-
-| Model | Resolutions |
+| Tool | What it does |
 |---|---|
-| gpt-image-2-vip | 1K, 2K, 4K |
-| gpt-image-2 (default) | 1K |
-| nano-banana | 1K |
-| nano-banana-2 | 1K, 2K, 4K |
-| nano-banana-pro | 1K, 2K, 4K |
+| `generate_image` | Text-to-image and image-to-image across all supported models and resolutions |
+| `list_image_models` | List every available model with its supported resolutions |
+| `describe_image` | Run a vision model over an image and get a description |
 
-## Project Structure
+See [Usage · Tools](docs/USAGE.en.md#tools) for full parameters and examples.
 
-```
-src/
-├── index.ts              # MCP entry point
-├── config.ts             # Configuration, model table, size mapping
-├── tools/
-│   ├── generate.ts       # generate_image
-│   ├── describe.ts       # describe_image
-│   └── models.ts         # list_image_models
-├── transport/
-│   ├── chat.ts           # Chat streaming (SSE)
-│   └── images.ts         # Synchronous images API
-└── lib/
-    ├── size.ts           # Derive size from resolution+aspect
-    ├── extract.ts        # Extract URL from Markdown
-    ├── save.ts           # Local download
-    └── http.ts           # fetch wrapper
-```
+## Documentation
 
-## Development
-
-```bash
-npm install
-npm run build    # tsup -> dist/index.js
-npm run dev      # watch mode
-```
+- [Usage Guide](docs/USAGE.en.md) — install, config, parameters, development
+- [中文 README](README.md)
+- [中文使用文档](docs/USAGE.md)
 
 ## License
 
-MIT
+MIT © Chunqi-Qi
