@@ -30,14 +30,10 @@ server.registerTool(
         .union([z.string(), z.array(z.string())])
         .describe("参考图 URL 或 base64，可传单张或多张")
         .optional(),
-      transport: z
-        .enum(["chat", "images", "auto"])
-        .default("auto")
-        .describe("通道：auto 优先 chat 流式防超时，失败回退 images"),
-      save_to: z
-        .string()
-        .describe("自定义保存目录（绝对路径）")
-        .optional(),
+      response_format: z
+        .enum(["url", "b64_json"])
+        .default("url")
+        .describe("返回格式"),
     },
   },
   async (input) => {

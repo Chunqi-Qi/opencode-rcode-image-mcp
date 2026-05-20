@@ -7,7 +7,6 @@ export interface GenerateParams {
   size: string;
   image?: string[];
   response_format?: "url" | "b64_json";
-  timeout_ms?: number;
 }
 
 export interface ImageData {
@@ -33,7 +32,7 @@ export interface GenerateResult {
 
 export async function generateViaImages(params: GenerateParams): Promise<GenerateResult> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), params.timeout_ms ?? config.REQUEST_TIMEOUT_MS);
+  const timeout = setTimeout(() => controller.abort(), config.REQUEST_TIMEOUT_MS);
 
   try {
     const body: Record<string, unknown> = {

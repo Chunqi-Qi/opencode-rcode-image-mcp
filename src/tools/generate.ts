@@ -3,7 +3,7 @@ import { config } from "../config.js";
 import { saveImage } from "../lib/save.js";
 import { generateViaChat } from "../transport/chat.js";
 import { generateViaImages } from "../transport/images.js";
-import type { ModelName, Transport } from "../config.js";
+import type { ModelName } from "../config.js";
 
 export const schema = z.object({
   prompt: z.string().describe("图片描述提示词"),
@@ -20,24 +20,10 @@ export const schema = z.object({
     .union([z.string(), z.array(z.string())])
     .optional()
     .describe("参考图 URL 或 base64"),
-  transport: z
-    .enum(["chat", "images", "auto"])
-    .default("auto")
-    .describe("auto 优先走 chat 流式，失败回退 images"),
   response_format: z
     .enum(["url", "b64_json"])
     .default("url")
     .describe("返回格式"),
-  save_to: z
-    .string()
-    .optional()
-    .describe("可选，保存图片到指定本地目录"),
-  timeout_ms: z
-    .number()
-    .int()
-    .positive()
-    .default(config.REQUEST_TIMEOUT_MS)
-    .describe("整体超时毫秒"),
 });
 
 type Input = z.infer<typeof schema>;
@@ -61,112 +47,62 @@ export async function generate(input: Input) {
     file_name?: string;
     buffer?: Buffer;
   }> = [];
-  let transportUsed: Transport = "auto";
+  let transportUsed: "chat" | "images" | "auto" = "auto";
   let usageResult: GenerateResult["usage"];
   let errorResult: string | undefined;
   let rawText: string | undefined;
 
-  const targetCount = 1;
+  const result = await generateViaChat({
+    model,
+    prompt: input.prompt,
+    size,
+    image: imageArr,
+  });
 
-  for (let i = 0; i < targetCount; i++) {
-    const shouldChat =
-      input.transport === "chat" ||
-      input.transport === "auto";
+  transportUsed = "chat";
+  rawText = result.raw_text;
 
-    if (shouldChat) {
-      const result = await generateViaChat({
-        model,
-        prompt: input.prompt,
-        size,
-        image: imageArr,
-        timeout_ms: input.timeout_ms,
-      });
-
-      transportUsed = "chat";
-      rawText = result.raw_text;
-
-      if (result.success && result.images.length > 0) {
-        for (const img of result.images) {
-          if (img.url) {
-            const saved = await saveImage(img.url, input.save_to);
-            images.push({
-              url: img.url,
-              local_path: saved?.local_path,
-              mime_type: saved?.mime_type,
-              buffer: saved?.buffer,
-            });
-          }
-        }
-        if (result.usage) usageResult = result.usage;
-        if (images.length >= targetCount) break;
-        continue;
-      }
-
-      const chatFailed = result.error;
-      if (input.transport === "auto") {
-        warnings.push(`chat failed: ${chatFailed}, falling back to images`);
-        const fallback = await generateViaImages({
-          model,
-          prompt: input.prompt,
-          size,
-          image: imageArr,
-          response_format: input.response_format as "url" | "b64_json",
-          timeout_ms: input.timeout_ms,
+  if (result.success && result.images.length > 0) {
+    for (const img of result.images) {
+      if (img.url) {
+        const saved = await saveImage(img.url);
+        images.push({
+          url: img.url,
+          local_path: saved?.local_path,
+          mime_type: saved?.mime_type,
+          buffer: saved?.buffer,
         });
-
-        transportUsed = "images";
-        if (fallback.success && fallback.images.length > 0) {
-          for (const img of fallback.images) {
-            const url = img.url ?? img.b64_json;
-            if (url) {
-              const saved = url.startsWith("http") ? await saveImage(url, input.save_to) : null;
-              images.push({
-                url: img.url,
-                b64_json: img.b64_json,
-                local_path: saved?.local_path,
-                mime_type: saved?.mime_type,
-                buffer: saved?.buffer,
-              });
-            }
-          }
-          if (fallback.usage) usageResult = fallback.usage;
-          break;
-        }
-
-        errorResult = fallback.error ?? "images fallback also failed";
-      } else {
-        errorResult = result.error ?? "chat mode failed";
       }
+    }
+    if (result.usage) usageResult = result.usage;
+  } else {
+    warnings.push(`chat failed: ${result.error}, falling back to images`);
+    const fallback = await generateViaImages({
+      model,
+      prompt: input.prompt,
+      size,
+      image: imageArr,
+      response_format: input.response_format as "url" | "b64_json",
+    });
+
+    transportUsed = "images";
+    if (fallback.success && fallback.images.length > 0) {
+      for (const img of fallback.images) {
+        const url = img.url ?? img.b64_json;
+        if (url) {
+          const saved = url.startsWith("http") ? await saveImage(url) : null;
+          images.push({
+            url: img.url,
+            b64_json: img.b64_json,
+            local_path: saved?.local_path,
+            mime_type: saved?.mime_type,
+            buffer: saved?.buffer,
+          });
+        }
+      }
+      if (fallback.usage) usageResult = fallback.usage;
     } else {
-      const result = await generateViaImages({
-        model,
-        prompt: input.prompt,
-        size,
-        image: imageArr,
-        response_format: input.response_format as "url" | "b64_json",
-        timeout_ms: input.timeout_ms,
-      });
-
-      transportUsed = "images";
-      if (result.success && result.images.length > 0) {
-        for (const img of result.images) {
-          const url = img.url ?? img.b64_json;
-          if (url) {
-            const saved = url.startsWith("http") ? await saveImage(url, input.save_to) : null;
-            images.push({
-              url: img.url,
-              b64_json: img.b64_json,
-              local_path: saved?.local_path,
-              mime_type: saved?.mime_type,
-              buffer: saved?.buffer,
-            });
-          }
-        }
-        if (result.usage) usageResult = result.usage;
-        break;
-      }
-
-      errorResult = result.error ?? "images mode failed";
+      errorResult = fallback.error ?? "images fallback also failed";
     }
   }
 

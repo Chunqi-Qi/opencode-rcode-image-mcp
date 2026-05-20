@@ -73,11 +73,11 @@ npm run build
   "command": {
     "draw": {
       "description": "生成图片",
-      "template": "请使用 opencode-rcode-image MCP 的 generate_image 工具生成图片。根据用户输入解析参数：第一行为提示词，可选 key=value 形式覆盖 model、size 等参数。默认 model=gpt-image-2。生成完成后回复图片本地路径和在线 URL，不要额外解释。\n\n用户输入：\n$ARGUMENTS"
+      "template": "请使用 opencode-rcode-image MCP 的 generate_image 工具生成图片。根据用户输入解析参数：非 key=value 文本均为 prompt，可选 key=value 参数仅识别 model、size、image、response_format。生成完成后只回复图片本地路径和在线 URL，不要额外解释。\n\n用户输入：\n$ARGUMENTS"
     },
     "draw-hd": {
       "description": "高清生图 + gpt-image-2-vip",
-      "template": "调用 generate_image 工具生成图片，强制 model=gpt-image-2-vip。提示词：$ARGUMENTS"
+      "template": "请使用 opencode-rcode-image MCP 的 generate_image 工具生成高清图片。固定参数 model=gpt-image-2-vip；根据用户输入解析参数：非 key=value 文本均为 prompt，可选 key=value 参数仅识别 size、image、response_format，忽略用户输入中的 model。生成完成后只回复图片本地路径和在线 URL，不要额外解释。\n\n用户输入：\n$ARGUMENTS"
     }
   }
 }
@@ -107,9 +107,7 @@ npm run build
 | `model` | enum | ❌ | `gpt-image-2` | 生图模型 |
 | `size` | string | ❌ | `1024x1024` | 像素尺寸如 `1024x1024` |
 | `image` | string / string[] | ❌ | — | 参考图 URL 或 base64（图生图） |
-| `transport` | `chat`/`images`/`auto` | ❌ | `auto` | 传输通道 |
-| `save_to` | string | ❌ | — | 自定义保存目录 |
-| `timeout_ms` | int | ❌ | `RIGHT_CODES_TIMEOUT_MS` | 单次请求超时，单位毫秒 |
+| `response_format` | `url`/`b64_json` | ❌ | `url` | 返回格式 |
 
 ### list_image_models
 
@@ -151,7 +149,6 @@ src/
 │   ├── chat.ts           # chat 流式 (SSE)
 │   └── images.ts         # images 同步
 └── lib/
-    ├── size.ts           # 尺寸辅助
     ├── extract.ts        # Markdown→URL 提取
     ├── save.ts           # 本地下载
     └── http.ts           # fetch 封装
@@ -167,7 +164,7 @@ npm run dev      # watch 模式
 
 ## 故障排查
 
-- **Cloudflare 100s 超时**：默认 `transport=auto` 已经会优先走 chat 流式规避，如果仍然超时，降低 `size` 或换更快的模型（`nano-banana`、`nano-banana-2`）
+- **Cloudflare 100s 超时**：工具默认优先走 chat 流式规避，并在失败时自动回退 images 接口；如果仍然超时，降低 `size` 或换更快的模型（`nano-banana`、`nano-banana-2`）
 - **Authentication failed**：检查 `RIGHT_CODES_API_KEY` 是否有效；OpenCode 重启后生效
 - **图片没有落盘**：检查 `RIGHT_CODES_DOWNLOAD_DIR` 路径是否存在写权限；首次会自动按日期建目录
 - **OpenCode 看不到工具**：确认 `command` 路径是绝对路径，且 `dist/index.js` 已经构建成功

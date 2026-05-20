@@ -31,9 +31,7 @@ export const config = {
   IMAGES_ENDPOINT: `${BASE_URL}/v1/images/generations`,
 
   DEFAULT_MODEL: "gpt-image-2",
-  DEFAULT_RESOLUTION: "1K",
   DEFAULT_SIZE: "1024x1024",
-  DEFAULT_ASPECT_RATIO: "1:1",
 
   CHAT_READ_MODEL: "gemini-3.1-pro",
 
@@ -60,28 +58,9 @@ export const config = {
     },
   } as const,
 
-  ASPECT_RATIOS: {
-    "1:1": { width: 1, height: 1 },
-    "16:9": { width: 16, height: 9 },
-    "9:16": { width: 9, height: 16 },
-    "4:3": { width: 4, height: 3 },
-    "3:4": { width: 3, height: 4 },
-    "3:2": { width: 3, height: 2 },
-    "2:3": { width: 2, height: 3 },
-  } as const,
-
-  RESOLUTION_PIXELS: {
-    "1K": 1024,
-    "2K": 2048,
-    "4K": 4096,
-  } as Record<string, number>,
-
   SYSTEM_PROMPT:
     "你是一个图片生成助手。用户要求生成图片时，请直接生成并返回图片链接。不要额外解释，只输出图片的 Markdown 格式：![image](URL)",
 } as const;
 
 export type ModelName = keyof typeof config.MODELS;
-export type AspectRatio = keyof typeof config.ASPECT_RATIOS;
-export type Resolution = keyof typeof config.RESOLUTION_PIXELS;
-export type Transport = "chat" | "images" | "auto";
 export type ResponseFormat = "url" | "b64_json";
