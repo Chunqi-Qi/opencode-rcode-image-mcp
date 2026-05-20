@@ -73,11 +73,11 @@ npm run build
   "command": {
     "draw": {
       "description": "生成图片",
-      "template": "请使用 opencode-rcode-image MCP 的 generate_image 工具生成图片。根据用户输入解析参数：第一行为提示词，可选 key=value 形式覆盖 model/resolution/aspect_ratio 等参数。默认 model=gpt-image-2, resolution=1K, aspect_ratio=1:1。生成完成后回复图片本地路径和在线 URL，不要额外解释。\n\n用户输入：\n$ARGUMENTS"
+      "template": "请使用 opencode-rcode-image MCP 的 generate_image 工具生成图片。根据用户输入解析参数：第一行为提示词，可选 key=value 形式覆盖 model、size 等参数。默认 model=gpt-image-2。生成完成后回复图片本地路径和在线 URL，不要额外解释。\n\n用户输入：\n$ARGUMENTS"
     },
     "draw-hd": {
-      "description": "高清生图 2K + gpt-image-2-vip",
-      "template": "调用 generate_image 工具生成图片，强制 model=gpt-image-2-vip, resolution=2K。提示词：$ARGUMENTS"
+      "description": "高清生图 + gpt-image-2-vip",
+      "template": "调用 generate_image 工具生成图片，强制 model=gpt-image-2-vip。提示词：$ARGUMENTS"
     }
   }
 }
@@ -89,7 +89,7 @@ npm run build
 
 ```
 /draw 一只穿宇航服的柴犬站在月球表面，写实风格
-/draw 赛博朋克城市夜景 model=nano-banana-2 resolution=2K aspect_ratio=16:9
+/draw 赛博朋克城市夜景 model=nano-banana-2 size=2048x1152
 /draw-hd 雨中霓虹街道
 ```
 
@@ -105,15 +105,11 @@ npm run build
 |---|---|---|---|---|
 | `prompt` | string | ✅ | — | 图片描述提示词 |
 | `model` | enum | ❌ | `gpt-image-2` | 生图模型 |
-| `resolution` | `1K`/`2K`/`4K` | ❌ | `1K` | 分辨率档位 |
-| `size` | string | ❌ | — | 像素尺寸如 `1024x1024`，覆盖 resolution+aspect_ratio |
-| `aspect_ratio` | `1:1`/`16:9`/... | ❌ | `1:1` | 宽高比 |
-| `n` | int (1-4) | ❌ | 1 | 生成数量 |
+| `size` | string | ❌ | `1024x1024` | 像素尺寸如 `1024x1024` |
 | `image` | string / string[] | ❌ | — | 参考图 URL 或 base64（图生图） |
 | `transport` | `chat`/`images`/`auto` | ❌ | `auto` | 传输通道 |
 | `save_to` | string | ❌ | — | 自定义保存目录 |
 | `timeout_ms` | int | ❌ | `RIGHT_CODES_TIMEOUT_MS` | 单次请求超时，单位毫秒 |
-| `seed` | int | ❌ | — | 随机种子 |
 
 ### list_image_models
 
@@ -155,7 +151,7 @@ src/
 │   ├── chat.ts           # chat 流式 (SSE)
 │   └── images.ts         # images 同步
 └── lib/
-    ├── size.ts           # resolution+aspect→size 推导
+    ├── size.ts           # 尺寸辅助
     ├── extract.ts        # Markdown→URL 提取
     ├── save.ts           # 本地下载
     └── http.ts           # fetch 封装
@@ -171,7 +167,7 @@ npm run dev      # watch 模式
 
 ## 故障排查
 
-- **Cloudflare 100s 超时**：默认 `transport=auto` 已经会优先走 chat 流式规避，如果仍然超时，降低 `resolution` 或换更快的模型（`nano-banana`、`nano-banana-2`）
+- **Cloudflare 100s 超时**：默认 `transport=auto` 已经会优先走 chat 流式规避，如果仍然超时，降低 `size` 或换更快的模型（`nano-banana`、`nano-banana-2`）
 - **Authentication failed**：检查 `RIGHT_CODES_API_KEY` 是否有效；OpenCode 重启后生效
 - **图片没有落盘**：检查 `RIGHT_CODES_DOWNLOAD_DIR` 路径是否存在写权限；首次会自动按日期建目录
 - **OpenCode 看不到工具**：确认 `command` 路径是绝对路径，且 `dist/index.js` 已经构建成功

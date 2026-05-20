@@ -22,25 +22,10 @@ server.registerTool(
         .enum(["gpt-image-2-vip", "gpt-image-2", "nano-banana", "nano-banana-2", "nano-banana-pro"])
         .default("gpt-image-2")
         .describe("生图模型：gpt-image-2-vip(1K/2K/4K), gpt-image-2(仅1K), nano-banana(仅1K), nano-banana-2(1K/2K/4K), nano-banana-pro(1K/2K/4K)"),
-      resolution: z
-        .enum(["1K", "2K", "4K"])
-        .default("1K")
-        .describe("分辨率档位"),
       size: z
         .string()
-        .describe("直接指定像素尺寸，如 1024x1024，覆盖 resolution+aspect_ratio")
+        .describe("直接指定像素尺寸，如 1024x1024")
         .optional(),
-      aspect_ratio: z
-        .enum(["1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3"])
-        .default("1:1")
-        .describe("宽高比"),
-      n: z
-        .number()
-        .int()
-        .min(1)
-        .max(4)
-        .default(1)
-        .describe("生成数量"),
       image: z
         .union([z.string(), z.array(z.string())])
         .describe("参考图 URL 或 base64，可传单张或多张")
@@ -52,11 +37,6 @@ server.registerTool(
       save_to: z
         .string()
         .describe("自定义保存目录（绝对路径）")
-        .optional(),
-      seed: z
-        .number()
-        .int()
-        .describe("随机种子")
         .optional(),
     },
   },

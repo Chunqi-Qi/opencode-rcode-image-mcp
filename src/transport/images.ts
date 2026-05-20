@@ -5,11 +5,9 @@ export interface GenerateParams {
   model: string;
   prompt: string;
   size: string;
-  n?: number;
   image?: string[];
   response_format?: "url" | "b64_json";
   timeout_ms?: number;
-  seed?: number;
 }
 
 export interface ImageData {
@@ -42,16 +40,11 @@ export async function generateViaImages(params: GenerateParams): Promise<Generat
       model: params.model,
       prompt: params.prompt,
       size: params.size,
-      n: params.n ?? 1,
       response_format: params.response_format ?? "url",
     };
 
     if (params.image && params.image.length > 0) {
       body.image = params.image.length === 1 ? params.image[0] : params.image;
-    }
-
-    if (params.seed !== undefined) {
-      body.seed = params.seed;
     }
 
     const data = await fetchJson(config.IMAGES_ENDPOINT, {

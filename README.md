@@ -22,7 +22,7 @@
 ## 核心特性
 
 - **多模型一站式**：一套配置切换 5 个生图模型，从极速预览到 4K 高清
-- **多分辨率**：1K / 2K / 4K，预设 1:1、16:9、9:16、4:3、3:4 等常用比例
+- **尺寸可控**：通过 `size` 指定像素尺寸，兼顾方图、横图和竖图等常用比例
 - **双通道防超时**：默认 chat 流式避开 Cloudflare 100s 限制，失败自动回退 images 同步
 - **自动落盘**：生成结果自动保存到 `~/Pictures/right-code/yyyy-mm-dd/`，按日期归档
 - **看图说话**：内置 `describe_image` 工具，调 Gemini 3 Pro 等视觉模型理解图片
@@ -32,7 +32,7 @@
 
 ```
 /draw 一只穿宇航服的柴犬站在月球表面，写实风格
-/draw 赛博朋克城市夜景 model=nano-banana-2 resolution=2K aspect_ratio=16:9
+/draw 赛博朋克城市夜景 model=nano-banana-2 size=2048x1152
 /draw-hd 雨中霓虹街道
 ```
 

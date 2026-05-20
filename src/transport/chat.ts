@@ -23,7 +23,6 @@ export interface ChatParams {
   size: string;
   image?: string[];
   timeout_ms?: number;
-  seed?: number;
 }
 
 export async function generateViaChat(params: ChatParams): Promise<GenerateResult> {
@@ -41,10 +40,6 @@ export async function generateViaChat(params: ChatParams): Promise<GenerateResul
         { role: "user", content: userContent },
       ],
     };
-
-    if (params.seed !== undefined) {
-      body.seed = params.seed;
-    }
 
     const res = await fetch(config.CHAT_ENDPOINT, {
       method: "POST",

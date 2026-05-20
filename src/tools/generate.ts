@@ -1,10 +1,9 @@
 import { z } from "zod";
 import { config } from "../config.js";
-import { deriveSize } from "../lib/size.js";
 import { saveImage } from "../lib/save.js";
 import { generateViaChat } from "../transport/chat.js";
 import { generateViaImages } from "../transport/images.js";
-import type { ModelName, AspectRatio, Resolution, Transport } from "../config.js";
+import type { ModelName, Transport } from "../config.js";
 
 export const schema = z.object({
   prompt: z.string().describe("图片描述提示词"),
@@ -12,26 +11,11 @@ export const schema = z.object({
     .enum(["gpt-image-2-vip", "gpt-image-2", "nano-banana", "nano-banana-2", "nano-banana-pro"])
     .default("gpt-image-2")
     .describe("生图模型"),
-  resolution: z
-    .enum(["1K", "2K", "4K"])
-    .default("1K")
-    .describe("分辨率档位，映射到像素尺寸"),
   size: z
     .string()
     .regex(/^\d{3,5}x\d{3,5}$/)
     .optional()
-    .describe("直接指定像素尺寸，覆盖 resolution 和 aspect_ratio"),
-  aspect_ratio: z
-    .enum(["1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3"])
-    .default("1:1")
-    .describe("宽高比，size 未填写时与 resolution 联合推导"),
-  n: z
-    .number()
-    .int()
-    .min(1)
-    .max(4)
-    .default(1)
-    .describe("生成数量"),
+    .describe("直接指定像素尺寸，如 1024x1024"),
   image: z
     .union([z.string(), z.array(z.string())])
     .optional()
@@ -54,11 +38,6 @@ export const schema = z.object({
     .positive()
     .default(config.REQUEST_TIMEOUT_MS)
     .describe("整体超时毫秒"),
-  seed: z
-    .number()
-    .int()
-    .optional()
-    .describe("随机种子 (部分模型支持)"),
 });
 
 type Input = z.infer<typeof schema>;
@@ -71,12 +50,8 @@ export async function generate(input: Input) {
       : [input.image]
     : undefined;
 
-  const sizeResult = input.size
-    ? { size: input.size }
-    : deriveSize(input.resolution as Resolution, input.aspect_ratio as AspectRatio, model);
-
-  const size = sizeResult.size;
-  const warnings: string[] = sizeResult.warning ? [sizeResult.warning] : [];
+  const size = input.size ?? config.DEFAULT_SIZE;
+  const warnings: string[] = [];
 
   const images: Array<{
     url?: string;
@@ -91,7 +66,7 @@ export async function generate(input: Input) {
   let errorResult: string | undefined;
   let rawText: string | undefined;
 
-  const targetCount = input.n ?? 1;
+  const targetCount = 1;
 
   for (let i = 0; i < targetCount; i++) {
     const shouldChat =
@@ -105,7 +80,6 @@ export async function generate(input: Input) {
         size,
         image: imageArr,
         timeout_ms: input.timeout_ms,
-        seed: input.seed,
       });
 
       transportUsed = "chat";
@@ -135,11 +109,9 @@ export async function generate(input: Input) {
           model,
           prompt: input.prompt,
           size,
-          n: Math.max(1, targetCount - images.length),
           image: imageArr,
           response_format: input.response_format as "url" | "b64_json",
           timeout_ms: input.timeout_ms,
-          seed: input.seed,
         });
 
         transportUsed = "images";
@@ -170,11 +142,9 @@ export async function generate(input: Input) {
         model,
         prompt: input.prompt,
         size,
-        n: Math.max(1, targetCount - images.length),
         image: imageArr,
         response_format: input.response_format as "url" | "b64_json",
         timeout_ms: input.timeout_ms,
-        seed: input.seed,
       });
 
       transportUsed = "images";

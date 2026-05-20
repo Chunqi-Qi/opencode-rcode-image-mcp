@@ -73,11 +73,11 @@ Optional shortcuts. Add them under the `command` field in `opencode.json`:
   "command": {
     "draw": {
       "description": "Generate an image",
-      "template": "Please use the generate_image tool from the opencode-rcode-image MCP server to generate an image. Parse parameters from the user's input: the first line is the prompt, and optional key=value pairs can override model/resolution/aspect_ratio and other parameters. Defaults: model=gpt-image-2, resolution=1K, aspect_ratio=1:1. After generation, reply with the local image path and online URL only, without extra explanation.\n\nUser input:\n$ARGUMENTS"
+      "template": "Please use the generate_image tool from the opencode-rcode-image MCP server to generate an image. Parse parameters from the user's input: the first line is the prompt, and optional key=value pairs can override model, size, and other parameters. Default: model=gpt-image-2. After generation, reply with the local image path and online URL only, without extra explanation.\n\nUser input:\n$ARGUMENTS"
     },
     "draw-hd": {
-      "description": "High-resolution image generation with 2K + gpt-image-2-vip",
-      "template": "Call the generate_image tool to generate an image, forcing model=gpt-image-2-vip and resolution=2K. Prompt: $ARGUMENTS"
+      "description": "High-resolution image generation with gpt-image-2-vip",
+      "template": "Call the generate_image tool to generate an image, forcing model=gpt-image-2-vip. Prompt: $ARGUMENTS"
     }
   }
 }
@@ -89,7 +89,7 @@ Restart OpenCode for changes to take effect.
 
 ```
 /draw A shiba inu in a spacesuit on the moon, photorealistic
-/draw Cyberpunk skyline at night model=nano-banana-2 resolution=2K aspect_ratio=16:9
+/draw Cyberpunk skyline at night model=nano-banana-2 size=2048x1152
 /draw-hd Neon street in the rain
 ```
 
@@ -105,15 +105,11 @@ Calls Right Code to generate images. Uses the chat streaming transport by defaul
 |---|---|---|---|---|
 | `prompt` | string | Yes | - | Image prompt |
 | `model` | enum | No | `gpt-image-2` | Image generation model |
-| `resolution` | `1K`/`2K`/`4K` | No | `1K` | Resolution tier |
-| `size` | string | No | - | Pixel size such as `1024x1024`; overrides resolution+aspect_ratio |
-| `aspect_ratio` | `1:1`/`16:9`/... | No | `1:1` | Aspect ratio |
-| `n` | int (1-4) | No | 1 | Number of images |
+| `size` | string | No | `1024x1024` | Pixel size such as `1024x1024` |
 | `image` | string / string[] | No | - | Reference image URL or base64 (image-to-image) |
 | `transport` | `chat`/`images`/`auto` | No | `auto` | Transport channel |
 | `save_to` | string | No | - | Custom save directory |
 | `timeout_ms` | int | No | `RIGHT_CODES_TIMEOUT_MS` | Per-request timeout in milliseconds |
-| `seed` | int | No | - | Random seed |
 
 ### list_image_models
 
@@ -155,7 +151,7 @@ src/
 │   ├── chat.ts           # Chat streaming (SSE)
 │   └── images.ts         # Synchronous images API
 └── lib/
-    ├── size.ts           # Derive size from resolution+aspect
+    ├── size.ts           # Size helpers
     ├── extract.ts        # Extract URL from Markdown
     ├── save.ts           # Local download
     └── http.ts           # fetch wrapper
@@ -171,7 +167,7 @@ npm run dev      # watch mode
 
 ## Troubleshooting
 
-- **Cloudflare 100s timeout**: the default `transport=auto` already prefers chat streaming to dodge this. If it still times out, lower the `resolution` or switch to a faster model (`nano-banana`, `nano-banana-2`).
+- **Cloudflare 100s timeout**: the default `transport=auto` already prefers chat streaming to dodge this. If it still times out, lower `size` or switch to a faster model (`nano-banana`, `nano-banana-2`).
 - **Authentication failed**: verify your `RIGHT_CODES_API_KEY`. Restart OpenCode for changes to take effect.
 - **Image not saved locally**: check that `RIGHT_CODES_DOWNLOAD_DIR` is writable. The date-based subdirectory is created on first run.
 - **OpenCode does not see the tools**: make sure `command` uses an absolute path and `dist/index.js` exists from a successful build.

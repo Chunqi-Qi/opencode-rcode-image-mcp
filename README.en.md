@@ -20,7 +20,7 @@ An MCP server that brings top-tier image models — `gpt-image-2` and the `nano-
 ## Highlights
 
 - **Multi-model in one place** — switch between five image models with a single config, from fast previews to 4K renders
-- **Multi-resolution** — 1K / 2K / 4K with preset 1:1, 16:9, 9:16, 4:3, 3:4 aspect ratios
+- **Size control** — set pixel dimensions with `size` for square, landscape, and portrait outputs
 - **Dual transport, timeout-proof** — chat streaming by default to dodge Cloudflare's 100s limit, with automatic fallback to the synchronous images API
 - **Auto-saved locally** — every result lands in `~/Pictures/right-code/yyyy-mm-dd/`, organized by date
 - **Vision built-in** — `describe_image` taps Gemini 3 Pro and friends to read images back
@@ -30,7 +30,7 @@ An MCP server that brings top-tier image models — `gpt-image-2` and the `nano-
 
 ```
 /draw A shiba inu in a spacesuit on the moon, photorealistic
-/draw Cyberpunk skyline at night model=nano-banana-2 resolution=2K aspect_ratio=16:9
+/draw Cyberpunk skyline at night model=nano-banana-2 size=2048x1152
 /draw-hd Neon street in the rain
 ```
 
