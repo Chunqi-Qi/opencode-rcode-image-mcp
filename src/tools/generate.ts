@@ -51,7 +51,8 @@ export const schema = z.object({
   timeout_ms: z
     .number()
     .int()
-    .default(180_000)
+    .positive()
+    .default(config.REQUEST_TIMEOUT_MS)
     .describe("整体超时毫秒"),
   seed: z
     .number()
@@ -103,6 +104,7 @@ export async function generate(input: Input) {
         prompt: input.prompt,
         size,
         image: imageArr,
+        timeout_ms: input.timeout_ms,
         seed: input.seed,
       });
 

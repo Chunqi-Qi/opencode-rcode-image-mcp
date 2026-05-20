@@ -35,7 +35,7 @@ export interface GenerateResult {
 
 export async function generateViaImages(params: GenerateParams): Promise<GenerateResult> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), params.timeout_ms ?? 180_000);
+  const timeout = setTimeout(() => controller.abort(), params.timeout_ms ?? config.REQUEST_TIMEOUT_MS);
 
   try {
     const body: Record<string, unknown> = {

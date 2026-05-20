@@ -38,6 +38,7 @@ The build output is `dist/index.js`, which serves as the MCP server entry point.
 | `RIGHT_CODES_API_KEY` | Yes | - | Right Code API key (`sk-xxx`) |
 | `RIGHT_CODES_BASE_URL` | No | `https://www.right.codes/draw` | API base URL |
 | `RIGHT_CODES_DOWNLOAD_DIR` | No | `~/Pictures/right-code` | Root directory for downloaded images |
+| `RIGHT_CODES_TIMEOUT_MS` | No | `300000` | Image generation request and download timeout in milliseconds |
 
 ### Register With OpenCode
 
@@ -53,7 +54,8 @@ Add the following to `~/.config/opencode/opencode.json`:
       "environment": {
         "RIGHT_CODES_API_KEY": "sk-xxx",
         "RIGHT_CODES_BASE_URL": "https://www.right.codes/draw",
-        "RIGHT_CODES_DOWNLOAD_DIR": "~/Pictures/right-code"
+        "RIGHT_CODES_DOWNLOAD_DIR": "~/Pictures/right-code",
+        "RIGHT_CODES_TIMEOUT_MS": "300000"
       }
     }
   }
@@ -110,6 +112,7 @@ Calls Right Code to generate images. Uses the chat streaming transport by defaul
 | `image` | string / string[] | No | - | Reference image URL or base64 (image-to-image) |
 | `transport` | `chat`/`images`/`auto` | No | `auto` | Transport channel |
 | `save_to` | string | No | - | Custom save directory |
+| `timeout_ms` | int | No | `RIGHT_CODES_TIMEOUT_MS` | Per-request timeout in milliseconds |
 | `seed` | int | No | - | Random seed |
 
 ### list_image_models

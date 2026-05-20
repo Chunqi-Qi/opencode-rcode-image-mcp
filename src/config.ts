@@ -4,6 +4,8 @@ import { homedir } from "node:os";
 
 const BASE_URL = process.env["RIGHT_CODES_BASE_URL"] ?? "https://www.right.codes/draw";
 const API_KEY = process.env["RIGHT_CODES_API_KEY"] ?? "";
+const TIMEOUT_ENV = Number(process.env["RIGHT_CODES_TIMEOUT_MS"] ?? 300_000);
+const REQUEST_TIMEOUT_MS = Number.isFinite(TIMEOUT_ENV) && TIMEOUT_ENV > 0 ? TIMEOUT_ENV : 300_000;
 const DEFAULT_DOWNLOAD = join(homedir(), "Pictures", "right-code");
 const DOWNLOAD_DIR = process.env["RIGHT_CODES_DOWNLOAD_DIR"]
   ? process.env["RIGHT_CODES_DOWNLOAD_DIR"].startsWith("~/")
@@ -23,6 +25,7 @@ export const config = {
   BASE_URL,
   API_KEY,
   DOWNLOAD_DIR,
+  REQUEST_TIMEOUT_MS,
 
   CHAT_ENDPOINT: `${BASE_URL}/v1/chat/completions`,
   IMAGES_ENDPOINT: `${BASE_URL}/v1/images/generations`,

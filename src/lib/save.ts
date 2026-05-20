@@ -10,8 +10,11 @@ export interface SaveResult {
 }
 
 export async function saveImage(url: string, saveTo?: string): Promise<SaveResult | null> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), config.REQUEST_TIMEOUT_MS);
+
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, { signal: controller.signal });
     if (!response.ok) return null;
 
     const contentType = response.headers.get("content-type") ?? "image/png";
@@ -42,5 +45,7 @@ export async function saveImage(url: string, saveTo?: string): Promise<SaveResul
     return { local_path, mime_type, buffer };
   } catch {
     return null;
+  } finally {
+    clearTimeout(timeout);
   }
 }

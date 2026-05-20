@@ -22,12 +22,13 @@ export interface ChatParams {
   prompt: string;
   size: string;
   image?: string[];
+  timeout_ms?: number;
   seed?: number;
 }
 
 export async function generateViaChat(params: ChatParams): Promise<GenerateResult> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 180_000);
+  const timeout = setTimeout(() => controller.abort(), params.timeout_ms ?? config.REQUEST_TIMEOUT_MS);
 
   try {
     const userContent = buildPromptContent(params.prompt, params.size, params.image);

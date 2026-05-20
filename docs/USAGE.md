@@ -38,6 +38,7 @@ npm run build
 | `RIGHT_CODES_API_KEY` | ✅ | — | Right Code API Key（`sk-xxx`） |
 | `RIGHT_CODES_BASE_URL` | ❌ | `https://www.right.codes/draw` | API 基础地址 |
 | `RIGHT_CODES_DOWNLOAD_DIR` | ❌ | `~/Pictures/right-code` | 图片下载根目录 |
+| `RIGHT_CODES_TIMEOUT_MS` | ❌ | `300000` | 生图请求和图片下载超时，单位毫秒 |
 
 ### OpenCode 注册
 
@@ -53,7 +54,8 @@ npm run build
       "environment": {
         "RIGHT_CODES_API_KEY": "sk-xxx",
         "RIGHT_CODES_BASE_URL": "https://www.right.codes/draw",
-        "RIGHT_CODES_DOWNLOAD_DIR": "~/Pictures/right-code"
+        "RIGHT_CODES_DOWNLOAD_DIR": "~/Pictures/right-code",
+        "RIGHT_CODES_TIMEOUT_MS": "300000"
       }
     }
   }
@@ -110,6 +112,7 @@ npm run build
 | `image` | string / string[] | ❌ | — | 参考图 URL 或 base64（图生图） |
 | `transport` | `chat`/`images`/`auto` | ❌ | `auto` | 传输通道 |
 | `save_to` | string | ❌ | — | 自定义保存目录 |
+| `timeout_ms` | int | ❌ | `RIGHT_CODES_TIMEOUT_MS` | 单次请求超时，单位毫秒 |
 | `seed` | int | ❌ | — | 随机种子 |
 
 ### list_image_models
